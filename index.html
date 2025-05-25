@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #c3ecf5, #e2f0cb);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .login-container {
+      background-color: white;
+      padding: 2rem 3rem;
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      width: 300px;
+    }
+
+    h2 {
+      margin-bottom: 1.5rem;
+      color: #333;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      background-color: #4caf50;
+      color: white;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .signup-link {
+      margin-top: 1rem;
+      font-size: 14px;
+    }
+
+    .signup-link a {
+      color: #007bff;
+      text-decoration: none;
+    }
+
+    .signup-link a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h2>Login</h2>
+    <form>
+      <input type="text" placeholder="Username" required />
+      <input type="password" placeholder="Password" required />
+      <button type="submit">Login</button>
+    </form>
+    <div class="signup-link">
+      New user? <a href="/signup">Signup</a>
+    </div>
+  </div>
+</body>
+</html>
+
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Real-time Math Detection</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Math Detection</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        #canvasContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        .drawingCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvasContainer"></div>
+    <script>
+        const socket = io();
+        const canvasContainer = document.getElementById("canvasContainer");
+        let textBuffer = "";
+        let drawing = false;
+        let penColor = "black";
+        let ctx, canvas;
+
+        function createCanvas() {
+            canvas = document.createElement("canvas");
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            canvas.classList.add("drawingCanvas");
+            canvasContainer.appendChild(canvas);
+            ctx = canvas.getContext("2d");
+            setupCanvas();
+        }
+
+        function setupCanvas() {
+            let lastX = null, lastY = null;
+
+            function getPosition(e) {
+                return e.touches ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: e.clientX, y: e.clientY };
+            }
+
+            function startDrawing(e) {
+                e.preventDefault();
+                drawing = true;
+                lastX = lastY = null;
+            }
+
+            function stopDrawing() {
+                drawing = false;
+                lastX = lastY = null;
+                console.log("Final textBuffer content:", textBuffer);
+                checkForMathEquation();
+                textBuffer = "";
+            }
+
+            function draw(e) {
+                if (!drawing) return;
+                e.preventDefault();
+                let { x, y } = getPosition(e);
+
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = penColor;
+
+                if (lastX !== null && lastY !== null) {
+                    ctx.beginPath();
+                    ctx.moveTo(lastX, lastY);
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                }
+
+                lastX = x;
+                lastY = y;
+            }
+
+            function handleKeyDown(e) {
+                console.log("Key Pressed:", e.key);
+                if (/[\d+\-*/=]/.test(e.key)) {
+                    textBuffer += e.key;
+                }
+            }
+
+            function checkForMathEquation() {
+                console.log("Checking textBuffer:", textBuffer);
+                let matches = textBuffer.match(/(\d+ *[\+\-\*\/] *\d+)=?/g);
+                console.log("Detected equations:", matches);
+
+                if (matches) {
+                    matches.forEach(expression => {
+                        console.log("Sending to server:", expression);
+                        socket.emit("solve_math", { expression: expression.trim() });
+                    });
+                }
+            }
+
+            canvas.addEventListener("mousedown", startDrawing);
+            canvas.addEventListener("mouseup", stopDrawing);
+            canvas.addEventListener("mousemove", draw);
+            document.addEventListener("keydown", handleKeyDown);
+        }
+
+        createCanvas();
+
+        socket.on("display_result", (data) => {
+            console.log("Received result:", data.result);
+            ctx.font = "20px Arial";
+            ctx.fillStyle = "black";
+            ctx.fillText(data.result, 50, 50);
+        });
+    </script>
+</body>
+</html>  -->
